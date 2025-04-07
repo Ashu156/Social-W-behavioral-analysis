@@ -15,25 +15,57 @@ import smoothfit
 import statsmodels.api as sm
 
 #%% 2. Plot for performance
+file_path = "C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_dwellTime.ods"
+WT = pd.read_excel(file_path, "WT100", engine="odf")
+FX = pd.read_excel(file_path, "FX100", engine="odf")
+# mixedWT = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_matches_per_minute.ods", "Mixed50", engine="odf")
+# mixedFX = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_matches_per_minute.ods", "Mixed100_FX", engine="odf")
 
-WT = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_pokeTime.ods", "WT50", engine="odf")
-FX = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_pokeTime.ods", "FX50", engine="odf")
-mixedWT = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_pokeTime.ods", "Mixed50_WT", engine="odf")
-mixedFX = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_pokeTime.ods", "Mixed50_FX", engine="odf")
+# WT = WT[['AS1_WT1', 'AS2_WT1', 'AS2_WT2']]
+# FX = FX[['AS1_FX1', 'AS2_FX1', 'ER1_FX1']]
+
+sess = 20
+
+# Create a new DataFrame to store the first 30 non-NaN elements for each column
+new_WT = pd.DataFrame()
+new_FX = pd.DataFrame()
+# Iterate through each column in the original DataFrame
+for column in WT.columns:
+    # Drop NaN values and select the first 30 non-NaN values
+    tempData = WT[column].dropna().iloc[:sess]
+    # Assign the result to the new DataFrame with the same column name
+    new_WT[column] = tempData
+
+# Ensure that the resulting DataFrame has 30 rows by filling NaN if there are fewer than 30 non-NaN values
+new_WT = new_WT.fillna(method='pad', axis=0)
 
 
+# Iterate through each column in the original DataFrame
+for column in FX.columns:
+    # Drop NaN values and select the first 30 non-NaN values
+    tempData = FX[column].dropna().iloc[:sess]
+    # Assign the result to the new DataFrame with the same column name
+    new_FX[column] = tempData
+
+# Ensure that the resulting DataFrame has 30 rows by filling NaN if there are fewer than 30 non-NaN values
+new_FX = new_FX.fillna(method='pad', axis=0)
+
+
+  
     
-WT = WT.transpose()
-FX = FX.transpose()
-mixedWT = mixedWT.transpose()
-mixedFX = mixedFX.transpose()
+WT = new_WT.transpose()
+FX = new_FX.transpose()
+# mixedWT = mixedWT.transpose()
+# mixedFX = mixedFX.transpose()
 
-sess = 34
+
+
+
 
 WT = WT.iloc[:, :sess]
 FX = FX.iloc[:, :sess]
-mixedWT = mixedWT.iloc[:, :sess]
-mixedFX = mixedFX.iloc[:, :sess]
+# mixedWT = mixedWT.iloc[:, :sess]
+# mixedFX = mixedFX.iloc[:, :sess]
 
 # WT = WT.iloc[:, :2000]
 # FX = FX.iloc[:, :2000]
@@ -63,11 +95,11 @@ WTerrPerf = WT.std(axis=0) / np.sqrt(WT.shape[0])
 FXmeanPerf = FX.mean(axis=0)
 FXerrPerf = FX.std(axis=0) / np.sqrt(FX.shape[0])
 
-MixedWTmeanPerf = mixedWT.mean(axis=0)
-MixedWTerrPerf = mixedWT.std(axis=0) / np.sqrt(mixedWT.shape[0])
+# MixedWTmeanPerf = mixedWT.mean(axis=0)
+# MixedWTerrPerf = mixedWT.std(axis=0) / np.sqrt(mixedWT.shape[0])
 
-MixedFXmeanPerf = mixedFX.mean(axis=0)
-MixedFXerrPerf = mixedFX.std(axis=0) / np.sqrt(mixedFX.shape[0])
+# MixedFXmeanPerf = mixedFX.mean(axis=0)
+# MixedFXerrPerf = mixedFX.std(axis=0) / np.sqrt(mixedFX.shape[0])
 
 # Smooth performance for WT group
 basis_mean, coeffs_mean = smoothfit.fit1d(np.arange(0,WTmeanPerf.shape[0], 1), WTmeanPerf, 0, WTmeanPerf.shape[0], 1000, degree=1, lmbda=lmbda)
@@ -97,29 +129,31 @@ plt.plot(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]], color = (1
 plt.fill_between(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]] - coeffs_err[basis_err.nodal_dofs[0]],
                   coeffs_mean[basis_mean.nodal_dofs[0]] + coeffs_err[basis_err.nodal_dofs[0]], alpha=0.2)
 
-# Smooth performance for mixed WT group
-basis_mean, coeffs_mean = smoothfit.fit1d(np.arange(0,MixedWTmeanPerf.shape[0], 1), MixedWTmeanPerf, 0, MixedWTmeanPerf.shape[0], 1000, degree=1, lmbda=lmbda)
-basis_err, coeffs_err = smoothfit.fit1d(np.arange(0,MixedWTerrPerf.shape[0], 1), MixedWTerrPerf, 0, MixedWTerrPerf.shape[0], 1000, degree=1, lmbda=lmbda)
+# # Smooth performance for mixed WT group
+# basis_mean, coeffs_mean = smoothfit.fit1d(np.arange(0,MixedWTmeanPerf.shape[0], 1), MixedWTmeanPerf, 0, MixedWTmeanPerf.shape[0], 1000, degree=1, lmbda=lmbda)
+# basis_err, coeffs_err = smoothfit.fit1d(np.arange(0,MixedWTerrPerf.shape[0], 1), MixedWTerrPerf, 0, MixedWTerrPerf.shape[0], 1000, degree=1, lmbda=lmbda)
 
 
 
-plt.plot(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]], color = 'blue', linestyle ="-")
+# plt.plot(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]], color = 'blue', linestyle ="-")
 
-# Plot the shaded region representing the smoothed SEM
-plt.fill_between(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]] - coeffs_err[basis_err.nodal_dofs[0]],
-                  coeffs_mean[basis_mean.nodal_dofs[0]] + coeffs_err[basis_err.nodal_dofs[0]], alpha=0.2)
+# # Plot the shaded region representing the smoothed SEM
+# plt.fill_between(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]] - coeffs_err[basis_err.nodal_dofs[0]],
+#                   coeffs_mean[basis_mean.nodal_dofs[0]] + coeffs_err[basis_err.nodal_dofs[0]], alpha=0.2)
 
-# Smooth performance for mixed FX group
-basis_mean, coeffs_mean = smoothfit.fit1d(np.arange(0,MixedFXmeanPerf.shape[0], 1), MixedFXmeanPerf, 0, MixedFXmeanPerf.shape[0], 1000, degree=1, lmbda=lmbda)
-basis_err, coeffs_err = smoothfit.fit1d(np.arange(0,MixedFXerrPerf.shape[0], 1), MixedFXerrPerf, 0, MixedFXerrPerf.shape[0], 1000, degree=1, lmbda=lmbda)
+# # Smooth performance for mixed FX group
+# basis_mean, coeffs_mean = smoothfit.fit1d(np.arange(0,MixedFXmeanPerf.shape[0], 1), MixedFXmeanPerf, 0, MixedFXmeanPerf.shape[0], 1000, degree=1, lmbda=lmbda)
+# basis_err, coeffs_err = smoothfit.fit1d(np.arange(0,MixedFXerrPerf.shape[0], 1), MixedFXerrPerf, 0, MixedFXerrPerf.shape[0], 1000, degree=1, lmbda=lmbda)
 
 
+# plt.plot(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]], color = 'pink', linestyle ="-")
 
-plt.plot(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]], color = 'pink', linestyle ="-")
+# # Plot the shaded region representing the smoothed SEM
+# plt.fill_between(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]] - coeffs_err[basis_err.nodal_dofs[0]],
+#                     coeffs_mean[basis_mean.nodal_dofs[0]] + coeffs_err[basis_err.nodal_dofs[0]], alpha=0.2)
 
-# Plot the shaded region representing the smoothed SEM
-plt.fill_between(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]] - coeffs_err[basis_err.nodal_dofs[0]],
-                    coeffs_mean[basis_mean.nodal_dofs[0]] + coeffs_err[basis_err.nodal_dofs[0]], alpha=0.2)
+plt.ylim((5, 65))
+plt.xlim((-2, 35))
 
 #%% Plot performance for shuffled choice data
 
@@ -1965,3 +1999,94 @@ plt.fill_between(basis_mean.mesh.p[0], coeffs_mean[basis_mean.nodal_dofs[0]] - c
 plt.ylim((30, 65))
 plt.axhline(50)
 plt.xticks(np.arange(0, 11, step=2))
+
+#%% 2. Linear regression for match rate vs transition rate
+
+from scipy.stats import linregress
+
+sheets = ['WT50', 'FX50']
+
+# Define color mapping
+color_map = {"WT50": "black", "FX50": "red"}
+text_position_map = {"WT50": (0.05, 0.9), "FX50": (0.7, 0.1)}  # Adjusted positions
+
+
+plt.figure(figsize = (5, 4))
+file_path = "C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_transitions_per_minute.ods"
+
+for sheet in sheets:
+
+    transitions = pd.read_excel(file_path, sheet, engine="odf")
+    matches = pd.read_excel(file_path, sheet, engine="odf")
+    
+    # mixedWT = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_Simpson_diversity_reciprocal.ods", "Mixed50_WT", engine="odf")
+    # mixedFX = pd.read_excel("C:/Users/shukl/OneDrive/Documents/MATLAB/Jadhav lab/Analyzed/allCohorts_Simpson_diversity_reciprocal.ods", "Mixed50_FX", engine="odf")
+    
+    sess = 35
+    
+    # Create a new DataFrame to store the first 30 non-NaN elements for each column
+    new_tr = pd.DataFrame()
+    new_mtch = pd.DataFrame()
+    
+    # Iterate through each column in the original DataFrame
+    for column in transitions.columns:
+        # Drop NaN values and select the first 30 non-NaN values
+        tempData = transitions[column].dropna().iloc[:sess]
+        # Assign the result to the new DataFrame with the same column name
+        new_tr[column] = tempData
+    
+    # Ensure that the resulting DataFrame has 30 rows by filling NaN if there are fewer than 30 non-NaN values
+    new_tr = new_tr.fillna(method='pad', axis=0)
+    
+    
+    # Iterate through each column in the original DataFrame
+    for column in matches.columns:
+        # Drop NaN values and select the first 30 non-NaN values
+        tempData = matches[column].dropna().iloc[:sess]
+        # Assign the result to the new DataFrame with the same column name
+        new_mtch[column] = tempData
+    
+    # Ensure that the resulting DataFrame has 30 rows by filling NaN if there are fewer than 30 non-NaN values
+    new_mtch = new_mtch.fillna(method='pad', axis=0)
+    
+    
+        
+    transitions = new_tr.transpose()
+    matches = new_mtch.transpose()
+    
+    
+    # Melt both dataframes
+    tr_melted = transitions.melt(var_name="Variable", value_name="transition_rate")
+    mtch_melted = matches.melt(var_name="Variable", value_name="match_rate")
+    
+    # Repeat FX rows to match WT
+    mtch_melted = mtch_melted.loc[mtch_melted.index.repeat(2)].reset_index(drop=True)
+    
+    # Concatenate into a single dataframe
+    combined_df = pd.concat([tr_melted, mtch_melted["match_rate"]], axis=1)
+    
+    # Drop NaN values before regression
+    combined_df = combined_df.dropna()
+    
+    # Compute linear regression statistics
+    slope, intercept, r_value, p_value, std_err = linregress(combined_df["transition_rate"], combined_df["match_rate"])
+    r_squared = r_value**2  # Compute R²
+    
+    # Plot with sns.regplot()
+    
+    # Select the correct color for the current sheet
+    plot_color = color_map.get(sheet, "black")  # Default to black if sheet name is unexpected
+    sns.regplot(data=combined_df, x="transition_rate", y="match_rate", scatter_kws={'s': 30, 'color': plot_color,'alpha': 0.6}, line_kws = {'color': plot_color})
+    
+    text_x, text_y = text_position_map.get(sheet, (0.05, 0.9))  # Default to (0.05, 0.9)
+    # Annotate with R² and p-value at different locations
+    plt.text(
+        text_x, text_y, f"$R^2$ = {r_squared:.3f}\n$p$-value = {p_value:.3g}",
+        transform=plt.gca().transAxes, fontsize=24, bbox=dict(facecolor='white', alpha=0.5)
+    )
+    
+    plt.xlabel("Transition rate")
+    plt.ylabel("Match rate")
+    plt.xlim((0, 6.5))
+    plt.ylim((-0.5, 5.5))
+    plt.show()

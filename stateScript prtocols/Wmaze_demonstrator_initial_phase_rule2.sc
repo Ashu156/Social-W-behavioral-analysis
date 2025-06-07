@@ -132,7 +132,7 @@ callback portin[10] up  % Left well
        disp(count)
         trigger(4)
         trigger(5)
-    else if lastWell == 2 && (lastSideWell == 0 || lastSideWell == 3) do
+    else if lastWell == 2 || lastSideWell == 3 do
         disp('Left well rewarded')
         rewardWell = rewardPump1
         trigger(1)
@@ -165,7 +165,7 @@ callback portin[14] up  % Center well
        disp(count)
         trigger(4)
         trigger(5)
-    else if lastWell == 1 || lastWell == 3 do
+    else if lastSideWell == 1 && (lastSideWell == 0 || lastSideWell == 3) do
         disp('Center well rewarded')
         rewardWell = rewardPump2
         trigger(1)
@@ -199,7 +199,7 @@ callback portin[9] up  % Right well
         trigger(5)
        
 
-    else if lastWell == 2 && (lastSideWell == 0 || lastSideWell == 1) do
+    else if lastSideWell == 1 && (lastSideWell == 0 || lastWell == 2) do
         disp('Right well rewarded')
         rewardWell = rewardPump3
         trigger(1)
